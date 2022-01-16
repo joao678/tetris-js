@@ -1,0 +1,15 @@
+{
+  "name": "tetris-web",
+  "version": "0.0.1",
+  "description": "README",
+  "scripts": {
+    "build": "rmdir dist /s /q && tsc",
+    "watch": "tsc -w"
+  },
+  "author": "fcanudo (joao678)",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^15.0.1",
+    "typescript": "^4.2.4"
+  }
+}
