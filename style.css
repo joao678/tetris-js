@@ -8,8 +8,10 @@ body {
     display: grid;
     align-content: center;
     justify-items: center;
+    background-color: black;
 }
 
 canvas {
-    border: 1px solid black;
+    border: 1px solid white;
+    outline: none;
 }

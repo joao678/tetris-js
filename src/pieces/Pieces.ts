@@ -50,17 +50,17 @@ class Shapes {
 export class Colors {
     private static colorList:string[] = [
         '0,0,0',
-        '128, 0, 128',
-        '255, 127, 0',
-        '0, 0, 139',
-        '255, 255, 0',
-        '50, 205, 50',
-        '220, 20, 60',
-        '0, 191, 255'
+        '255,34,195',
+        '255,128,44',
+        '46,85,255',
+        '255,193,44',
+        '129,255,6',
+        '255,45,89',
+        '45,193,255'
     ];
 
-    public static getColor(index:number, isGhost: boolean): string {
-        return `${isGhost ? 'rgba(' : 'rgb('}${this.colorList[index]}${isGhost ? ',0.5' : ')'}`
+    public static getColor(index:number, isTransparent: boolean): string {
+        return `${isTransparent ? 'rgba(' : 'rgb('}${this.colorList[index]}${isTransparent ? ',0.5' : ')'}`
     }
 }
 

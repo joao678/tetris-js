@@ -32,7 +32,7 @@ let ghostY:number = 0;
 let drop_timer:number = 0;
 let target_time:number = 45;
 
-canvas.width = _BLOCK_SIZE*10;
+canvas.width = _BLOCK_SIZE*20;
 canvas.height = _BLOCK_SIZE*20;
 canvas.tabIndex = 0;
 
@@ -142,16 +142,17 @@ function placePiece(x: number, y: number):void {
 }
 
 function drawGrid():void {
-    for (let gridColumns = _BLOCK_SIZE; gridColumns < (_BLOCK_SIZE * 10); gridColumns+=_BLOCK_SIZE) {
-        c.strokeStyle = 'rgb(0,0,0)';
+    c.lineWidth = 1;
+    for (let gridColumns = 0; gridColumns <= (_BLOCK_SIZE * 10); gridColumns += _BLOCK_SIZE) {
+        c.strokeStyle = 'rgb(128,128,128)';
         c.beginPath();
         c.moveTo(gridColumns,0);
         c.lineTo(gridColumns, _BLOCK_SIZE*20);
         c.stroke();
     }
 
-    for (let gridRows = _BLOCK_SIZE; gridRows < (_BLOCK_SIZE * 20); gridRows+=_BLOCK_SIZE) {
-        c.strokeStyle = 'rgb(0,0,0)';
+    for (let gridRows = 0; gridRows <= (_BLOCK_SIZE * 20); gridRows += _BLOCK_SIZE) {
+        c.strokeStyle = 'rgb(128,128,128)';
         c.beginPath();
         c.moveTo(0,gridRows);
         c.lineTo(_BLOCK_SIZE*10, gridRows);
@@ -173,8 +174,9 @@ function drawGhostPiece():void {
     currentPiece.forEach(function(rows,row_index) {
         rows.forEach(function(column,column_index) {
             if(!column) return;
-            c.fillStyle = Colors.getColor(column, true);
-            c.fillRect((ghostX*_BLOCK_SIZE)+(column_index*_BLOCK_SIZE),(ghostY*_BLOCK_SIZE)+(row_index*_BLOCK_SIZE),_BLOCK_SIZE,_BLOCK_SIZE);
+            c.strokeStyle = Colors.getColor(column, false);
+            c.lineWidth = 2;
+            c.strokeRect((ghostX*_BLOCK_SIZE)+(column_index*_BLOCK_SIZE),(ghostY*_BLOCK_SIZE)+(row_index*_BLOCK_SIZE),_BLOCK_SIZE,_BLOCK_SIZE);
         });
     });
 }
@@ -328,9 +330,55 @@ function startGame():void {
     updateGhostPiece();
 }
 
+function drawHold(x:number, y: number):void {
+    c.translate(x,y);
+
+    c.strokeStyle = 'rgb(128,128,128)'
+    c.strokeRect(0,0,(_BLOCK_SIZE*4)+10,(_BLOCK_SIZE*4)+10);
+
+    c.translate(window.pieceX,window.pieceY);
+    
+    //console.log(30 * Pieces.getPiece(window.piece).filter(row => !row.every(e => e === 0 )).length);
+
+    /*console.log(
+    Pieces.getPiece(window.piece).filter(row => !row.every(e => e === 0 )).map((row,i,arr) => {
+        if (!arr.every(x => x[i] === 0))
+            return row.slice(i, i+1);
+        return row;
+    })
+    )*/
+
+    Pieces.getPiece(window.piece).forEach(function(rows,row_index) {
+        rows.forEach(function(column,column_index) {
+            if(!column) return;
+            c.fillStyle = Colors.getColor(column, false);
+            c.fillRect((0*_BLOCK_SIZE)+(column_index*_BLOCK_SIZE),(0*_BLOCK_SIZE)+(row_index*_BLOCK_SIZE),_BLOCK_SIZE,_BLOCK_SIZE);
+        });
+    });
+
+    c.resetTransform();
+}
+
+function drawBoard(x:number, y: number):void {
+    c.translate(x,y);
+    drawCurrentPiece();
+    drawPlayfield();
+    drawGrid();
+    drawGhostPiece();
+    c.resetTransform();
+}
+
+declare let window:any;
+window.drawHoldX = 10;
+window.drawHoldY = 10;
+
+window.pieceX = 0;
+window.pieceY = 0;
+window.piece = 0;
+
 startGame();
 setInterval(() => {
-    c.clearRect(0, 0, _BLOCK_SIZE*10, _BLOCK_SIZE*20);
+    c.clearRect(0, 0, canvas.width, canvas.height);
 
     target_time = 45;
 
@@ -343,8 +391,11 @@ setInterval(() => {
 
     checkPreDropState();
 
-    drawCurrentPiece();
-    drawGhostPiece();
-    drawPlayfield();
-    drawGrid();
+    //drawHold(window.drawHoldX,window.drawHoldY);
+    drawBoard(((_BLOCK_SIZE*10)/2)-1,0);
+
+    c.fillStyle = 'rgb(255,0,0)';
+    c.font = "30px serif";
+    c.fillText('teste',0,0);
+    
 },1000/_FPS);

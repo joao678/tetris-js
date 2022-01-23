@@ -26,7 +26,7 @@ let ghostX = 0;
 let ghostY = 0;
 let drop_timer = 0;
 let target_time = 45;
-canvas.width = _BLOCK_SIZE * 10;
+canvas.width = _BLOCK_SIZE * 20;
 canvas.height = _BLOCK_SIZE * 20;
 canvas.tabIndex = 0;
 canvas.onkeydown = canvas.onkeyup = function (e) {
@@ -130,15 +130,16 @@ function placePiece(x, y) {
     });
 }
 function drawGrid() {
-    for (let gridColumns = _BLOCK_SIZE; gridColumns < (_BLOCK_SIZE * 10); gridColumns += _BLOCK_SIZE) {
-        c.strokeStyle = 'rgb(0,0,0)';
+    c.lineWidth = 1;
+    for (let gridColumns = 0; gridColumns <= (_BLOCK_SIZE * 10); gridColumns += _BLOCK_SIZE) {
+        c.strokeStyle = 'rgb(128,128,128)';
         c.beginPath();
         c.moveTo(gridColumns, 0);
         c.lineTo(gridColumns, _BLOCK_SIZE * 20);
         c.stroke();
     }
-    for (let gridRows = _BLOCK_SIZE; gridRows < (_BLOCK_SIZE * 20); gridRows += _BLOCK_SIZE) {
-        c.strokeStyle = 'rgb(0,0,0)';
+    for (let gridRows = 0; gridRows <= (_BLOCK_SIZE * 20); gridRows += _BLOCK_SIZE) {
+        c.strokeStyle = 'rgb(128,128,128)';
         c.beginPath();
         c.moveTo(0, gridRows);
         c.lineTo(_BLOCK_SIZE * 10, gridRows);
@@ -160,8 +161,9 @@ function drawGhostPiece() {
         rows.forEach(function (column, column_index) {
             if (!column)
                 return;
-            c.fillStyle = Colors.getColor(column, true);
-            c.fillRect((ghostX * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (ghostY * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+            c.strokeStyle = Colors.getColor(column, false);
+            c.lineWidth = 2;
+            c.strokeRect((ghostX * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (ghostY * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
         });
     });
 }
@@ -289,9 +291,37 @@ function checkPreDropState() {
 function startGame() {
     updateGhostPiece();
 }
+function drawHold(x, y) {
+    c.translate(x, y);
+    c.strokeStyle = 'rgb(128,128,128)';
+    c.strokeRect(0, 0, (_BLOCK_SIZE * 4) + 10, (_BLOCK_SIZE * 4) + 10);
+    c.translate(window.pieceX, window.pieceY);
+    Pieces.getPiece(window.piece).forEach(function (rows, row_index) {
+        rows.forEach(function (column, column_index) {
+            if (!column)
+                return;
+            c.fillStyle = Colors.getColor(column, false);
+            c.fillRect((0 * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (0 * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+        });
+    });
+    c.resetTransform();
+}
+function drawBoard(x, y) {
+    c.translate(x, y);
+    drawCurrentPiece();
+    drawPlayfield();
+    drawGrid();
+    drawGhostPiece();
+    c.resetTransform();
+}
+window.drawHoldX = 10;
+window.drawHoldY = 10;
+window.pieceX = 0;
+window.pieceY = 0;
+window.piece = 0;
 startGame();
 setInterval(() => {
-    c.clearRect(0, 0, _BLOCK_SIZE * 10, _BLOCK_SIZE * 20);
+    c.clearRect(0, 0, canvas.width, canvas.height);
     target_time = 45;
     space.doOnce();
     up.doOnce();
@@ -300,9 +330,9 @@ setInterval(() => {
     down_once.doOnce();
     down_every_frame.everyFrame();
     checkPreDropState();
-    drawCurrentPiece();
-    drawGhostPiece();
-    drawPlayfield();
-    drawGrid();
+    drawBoard(((_BLOCK_SIZE * 10) / 2) - 1, 0);
+    c.fillStyle = 'rgb(255,0,0)';
+    c.font = "30px serif";
+    c.fillText('teste', 0, 0);
 }, 1000 / _FPS);
 //# sourceMappingURL=index.js.map
