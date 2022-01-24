@@ -76,9 +76,7 @@ function move(direction) {
             if (canMoveRight()) {
                 x += 1;
                 updateGhostPiece();
-                if (hitBottom(false))
-                    return resetPreDropState();
-                if (hitOtherBlock(false))
+                if (!hitOtherBlock(false))
                     return resetPreDropState();
             }
             ;
@@ -87,9 +85,7 @@ function move(direction) {
             if (canMoveLeft()) {
                 x -= 1;
                 updateGhostPiece();
-                if (hitBottom(false))
-                    return resetPreDropState();
-                if (hitOtherBlock(false))
+                if (!hitOtherBlock(false))
                     return resetPreDropState();
             }
             ;
@@ -211,6 +207,8 @@ function hitBottom(ignorePlacementTimer) {
     return hasHitBottom;
 }
 function hitOtherBlock(ignorePlacementTimer) {
+    if (hitBottom(false))
+        return true;
     let hasHitOtherBlock = false;
     preDropState.isTouching = false;
     currentPiece.forEach(function (rows, row_index) {
@@ -275,8 +273,6 @@ function dropTime() {
     drop_timer += 1;
 }
 function checkPreDropState() {
-    if (!preDropState.isTouching)
-        dropTime();
     if (preDropState.isTouching) {
         if (preDropState.time === 50) {
             preDropState.time = 0;
@@ -330,9 +326,7 @@ setInterval(() => {
     down_once.doOnce();
     down_every_frame.everyFrame();
     checkPreDropState();
+    dropTime();
     drawBoard(((_BLOCK_SIZE * 10) / 2) - 1, 0);
-    c.fillStyle = 'rgb(255,0,0)';
-    c.font = "30px serif";
-    c.fillText('teste', 0, 0);
 }, 1000 / _FPS);
 //# sourceMappingURL=index.js.map
