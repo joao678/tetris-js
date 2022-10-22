@@ -396,7 +396,7 @@ setInterval(() => {
     checkPreDropState();
     dropTime();
 
-    drawHold(window.drawHoldX,window.drawHoldY);
+    //drawHold(window.drawHoldX,window.drawHoldY);
     drawBoard(((_BLOCK_SIZE * 10) / 2) - 1, 0);
 
     /*c.fillStyle = 'rgb(255,0,0)';
