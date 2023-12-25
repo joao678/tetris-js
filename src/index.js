@@ -2,35 +2,35 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext("2d");
 
 import { Direction } from "./enums/Direction.js";
-import { Colors, Pieces, Shape } from "./pieces/Pieces.js";
+import { Colors, Pieces } from "./pieces/Pieces.js";
 import { Key } from "./utils/Key.js";
 
-export const _KEYLIST: any = {};
-export const _FPS: number = 60;
-const _BLOCK_SIZE: number = 30;
+export const _KEYLIST = {};
+export const _FPS = 60;
+const _BLOCK_SIZE = 30;
 const playfield = Array(20).fill(null).map(() => Array(10).fill(0));
-const _RIGHT_WALL_LIMIT: number = playfield[0].length - 1;
-const _LEFT_WALL_LIMIT: number = 0;
+const _RIGHT_WALL_LIMIT = playfield[0].length - 1;
+const _LEFT_WALL_LIMIT = 0;
 
-const left: Key = new Key('ArrowLeft', () => move(Direction.Left));
-const right: Key = new Key('ArrowRight', () => move(Direction.Right));
-const up: Key = new Key('ArrowUp', () => rotate());
-const down_once: Key = new Key('ArrowDown', () => resetTimerOnce());
-const down_every_frame: Key = new Key('ArrowDown', () => softDrop());
-const space: Key = new Key(' ', () => hardDrop());
+const left = new Key('ArrowLeft', () => move(Direction.Left));
+const right = new Key('ArrowRight', () => move(Direction.Right));
+const up = new Key('ArrowUp', () => rotate());
+const down_once = new Key('ArrowDown', () => resetTimerOnce());
+const down_every_frame = new Key('ArrowDown', () => softDrop());
+const space = new Key(' ', () => hardDrop());
 
 const preDropState = {
     time: 0,
     isTouching: false
 }
 
-let currentPiece: Shape = Pieces.getPiece(0);
-let x: number = 2;
-let y: number = 0;
-let ghostX: number = 0;
-let ghostY: number = 0;
-let drop_timer: number = 0;
-let target_time: number = 45;
+let currentPiece = Pieces.getPiece(0);
+let x = 2;
+let y = 0;
+let ghostX = 0;
+let ghostY = 0;
+let drop_timer = 0;
+let target_time = 45;
 
 canvas.width = _BLOCK_SIZE * 20;
 canvas.height = _BLOCK_SIZE * 20;
@@ -40,7 +40,7 @@ canvas.onkeydown = canvas.onkeyup = function (e) {
     _KEYLIST[e.key] = e.type === 'keydown';
 }
 
-function isPieceCollidingWithLeftWall(): boolean {
+function isPieceCollidingWithLeftWall() {
     return currentPiece.some((row) => {
         return row.some((col, colIndex) => {
             return col && x + colIndex === _LEFT_WALL_LIMIT;
@@ -48,7 +48,7 @@ function isPieceCollidingWithLeftWall(): boolean {
     });
 }
 
-function isPieceCollidingWithRightWall(): boolean {
+function isPieceCollidingWithRightWall() {
     return currentPiece.some((row) => {
         return row.some((col, colIndex) => {
             return col && x + colIndex === _RIGHT_WALL_LIMIT;
@@ -56,7 +56,7 @@ function isPieceCollidingWithRightWall(): boolean {
     });
 }
 
-function isPieceCollidingWithLeftOfPlayField(): boolean {
+function isPieceCollidingWithLeftOfPlayField() {
     return currentPiece.some((row, rowIndex) => {
         return row.some((col, colIndex) => {
             return col && playfield[y + rowIndex][x + colIndex - 1];
@@ -64,7 +64,7 @@ function isPieceCollidingWithLeftOfPlayField(): boolean {
     });
 }
 
-function isPieceCollidingWithRightOfPlayField(): boolean {
+function isPieceCollidingWithRightOfPlayField() {
     return currentPiece.some((row, rowIndex) => {
         return row.some((col, colIndex) => {
             return col && playfield[y + rowIndex][x + colIndex + 1];
@@ -72,20 +72,20 @@ function isPieceCollidingWithRightOfPlayField(): boolean {
     });
 }
 
-function canMoveLeft(): boolean {
+function canMoveLeft() {
     return !isPieceCollidingWithLeftWall() && !isPieceCollidingWithLeftOfPlayField();
 }
 
-function canMoveRight(): boolean {
+function canMoveRight() {
     return !isPieceCollidingWithRightWall() && !isPieceCollidingWithRightOfPlayField();
 }
 
-function resetPreDropState(): void {
+function resetPreDropState() {
     preDropState.isTouching = false;
     preDropState.time = 0;
 }
 
-function move(direction: Direction): void {
+function move(direction) {
     switch (direction) {
         case Direction.Right:
             if (canMoveRight()) {
@@ -112,7 +112,7 @@ playfield[6][2] = 2;
 playfield[6][4] = 2;
 playfield[7][3] = 2; */
 
-function rotate(): void {
+function rotate() {
     let beforeRotatePiece = currentPiece,
         afterRotatePiece = Pieces.rotateBlock(currentPiece, true);
 
@@ -136,7 +136,7 @@ function rotate(): void {
         debugger
 }
 
-function placePiece(x: number, y: number): void {
+function placePiece(x, y) {
     currentPiece.forEach((row, row_index) => {
         row.forEach((col, col_index) => {
             if (col) {
@@ -146,7 +146,7 @@ function placePiece(x: number, y: number): void {
     });
 }
 
-function drawGrid(): void {
+function drawGrid() {
     c.lineWidth = 1;
     for (let gridColumns = 0; gridColumns <= (_BLOCK_SIZE * 10); gridColumns += _BLOCK_SIZE) {
         c.strokeStyle = 'rgb(128,128,128)';
@@ -165,7 +165,7 @@ function drawGrid(): void {
     }
 }
 
-function drawCurrentPiece(): void {
+function drawCurrentPiece() {
     currentPiece.forEach(function (rows, row_index) {
         rows.forEach(function (column, column_index) {
             if (!column) return;
@@ -175,7 +175,7 @@ function drawCurrentPiece(): void {
     });
 }
 
-function drawGhostPiece(): void {
+function drawGhostPiece() {
     currentPiece.forEach(function (rows, row_index) {
         rows.forEach(function (column, column_index) {
             if (!column) return;
@@ -186,7 +186,7 @@ function drawGhostPiece(): void {
     });
 }
 
-function drawPlayfield(): void {
+function drawPlayfield() {
     playfield.forEach((rows, row_index) => {
         rows.forEach((column, column_index) => {
             if (!column) return;
@@ -196,7 +196,7 @@ function drawPlayfield(): void {
     });
 }
 
-function checkForLines(): void {
+function checkForLines() {
     const foundLines = Object.entries(playfield).filter((e) => {
         const [idx, val] = e;
         return val.every(x => x !== 0);
@@ -211,7 +211,7 @@ function checkForLines(): void {
 }
 
 
-function resetCurrentPiece(): void {
+function resetCurrentPiece() {
     placePiece(x, y);
     currentPiece = Pieces.getPiece(Math.floor(Math.random() * (Pieces.getShapeListLength() + 1)));
     y = 0;
@@ -225,7 +225,7 @@ function resetCurrentPiece(): void {
     playfield.forEach(e => console.log( `║${e.map(x => x ? '█': ' ').join('')}║` ));
 }*/
 
-function hitBottom(ignorePlacementTimer: boolean): boolean {
+function hitBottom(ignorePlacementTimer) {
     let hasHitBottom = false;
 
     preDropState.isTouching = false;
@@ -242,7 +242,7 @@ function hitBottom(ignorePlacementTimer: boolean): boolean {
     return hasHitBottom;
 }
 
-function hitOtherBlock(ignorePlacementTimer: boolean): boolean {
+function hitOtherBlock(ignorePlacementTimer) {
     if (hitBottom(false)) return true;
     let hasHitOtherBlock = false;
 
@@ -259,21 +259,21 @@ function hitOtherBlock(ignorePlacementTimer: boolean): boolean {
     return hasHitOtherBlock;
 }
 
-function resetTimerOnce(): void {
+function resetTimerOnce() {
     drop_timer = 0;
 }
 
-function softDrop(): void {
+function softDrop() {
     target_time = 5;
 }
 
-function hardDrop(): void {
+function hardDrop() {
     while (!hitBottom(true) && !hitOtherBlock(true)) {
         y = y + 1;
     }
 }
 
-function ghostHitBottom(): boolean {
+function ghostHitBottom() {
     let hasHitBottom = false;
 
     currentPiece.forEach(function (rows, row_index) {
@@ -287,7 +287,7 @@ function ghostHitBottom(): boolean {
     return hasHitBottom;
 }
 
-function ghostHitOtherBlock(): boolean {
+function ghostHitOtherBlock() {
     let hasHitOtherBlock = false;
 
     currentPiece.forEach(function (rows, row_index) {
@@ -300,7 +300,7 @@ function ghostHitOtherBlock(): boolean {
     return hasHitOtherBlock;
 }
 
-function updateGhostPiece(): void {
+function updateGhostPiece() {
     ghostX = x;
     ghostY = y;
     while (!ghostHitBottom() && !ghostHitOtherBlock()) {
@@ -308,7 +308,7 @@ function updateGhostPiece(): void {
     }
 }
 
-function dropTime(): void {
+function dropTime() {
     if (drop_timer === target_time) {
         if (hitBottom(false)) return;
         if (hitOtherBlock(false)) return;
@@ -318,7 +318,7 @@ function dropTime(): void {
     drop_timer += 1;
 }
 
-function checkPreDropState(): void {
+function checkPreDropState() {
     if (preDropState.isTouching) {
         if (preDropState.time === 50) {
             preDropState.time = 0;
@@ -330,11 +330,11 @@ function checkPreDropState(): void {
     }
 }
 
-function startGame(): void {
+function startGame() {
     updateGhostPiece();
 }
 
-function drawHold(x: number, y: number): void {
+function drawHold(x, y) {
     c.translate(x, y);
 
     c.strokeStyle = 'rgb(128,128,128)'
@@ -363,7 +363,7 @@ function drawHold(x: number, y: number): void {
     c.resetTransform();
 }
 
-function drawBoard(x: number, y: number): void {
+function drawBoard(x, y) {
     c.translate(x, y);
     drawCurrentPiece();
     drawPlayfield();
@@ -372,7 +372,6 @@ function drawBoard(x: number, y: number): void {
     c.resetTransform();
 }
 
-declare let window: any;
 window.drawHoldX = 10;
 window.drawHoldY = 10;
 
