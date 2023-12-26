@@ -56,7 +56,7 @@ export class Colors {
     ];
 
     static getColor(index, isTransparent) {
-        return `${isTransparent ? 'rgba(' : 'rgb('}${this.colorList[index]}${isTransparent ? ',0.5' : ')'}`
+        return `${isTransparent ? 'rgba(' : 'rgb('}${this.colorList[index]}${isTransparent ? ',0.4' : ')'}`
     }
 }
 

@@ -24,7 +24,7 @@ const preDropState = {
     isTouching: false
 }
 
-let currentPiece = Pieces.getPiece(0);
+let currentPiece = Pieces.getPiece(2);
 let x = 2;
 let y = 0;
 let ghostX = 0;
@@ -104,44 +104,98 @@ function move(direction) {
     }
 }
 
-rotate();
-/* playfield[4][2] = 2;
-playfield[5][1] = 2;
-playfield[5][2] = 2;
-playfield[6][2] = 2;
-playfield[6][4] = 2;
-playfield[7][3] = 2; */
-
+/**
+ * Função de rotação que corrige a posição caso a peça entre por dentro do playfield (precisa ser melhorada para seguir as regras oficiais)
+ */
 function rotate() {
-    let beforeRotatePiece = currentPiece,
-        afterRotatePiece = Pieces.rotateBlock(currentPiece, true);
+    let beforeRotatePiece = currentPiece;
+    let afterRotatePiece = Pieces.rotateBlock(currentPiece, true);
+    const checkIfOverlapping = function () {
+        let result = false;
+        currentPiece.forEach((row, row_index) => {
+            row.forEach((col, col_index) => {
+                if (col)
+                    if (playfield[row_index + y][col_index + x] !== 0) result = true;
+            });
+        });
+        return result;
+    };
+
+    let beforeX = x;
+    let beforeY = y;
 
     currentPiece = afterRotatePiece;
 
     if (isPieceCollidingWithLeftWall()) x = 0;
     if (isPieceCollidingWithRightWall()) x = 10 - currentPiece[0].length;
 
+    if (checkIfOverlapping()) {
+        // eu uso o drawBoard denovo por que se ele cair no debugger a tela fica preta e eu não consigo ver visualmente o estado do game
+        for (let i = 0; i < 8; i++) {
+            x = beforeX;
+            y = beforeY;
+            switch (i) {
+                case 0:
+                    // ⬆️
+                    y -= 1;
+                    break;
+                case 1:
+                    // ⬇️
+                    y += 1;
+                    break;
+                case 2:
+                    // ⬅️
+                    x -= 1;
+                    break;
+                case 3:
+                    // ➡️
+                    x += 1;
+                    break;
+
+                case 4:
+                    // ↗️
+                    y -= 1;
+                    x += 1;
+                    break;
+                case 5:
+                    // ↘️
+                    y += 1;
+                    x += 1;
+                    break;
+                case 6:
+                    // ↙️
+                    y += 1;
+                    x -= 1;
+                    break;
+                case 7:
+                    // ↖️
+                    y -= 1;
+                    x -= 1;
+                    break;
+            }
+
+            if (isPieceCollidingWithLeftWall()) x = 0;
+            if (isPieceCollidingWithRightWall()) x = 10 - currentPiece[0].length;
+
+            // caso a peça não esteja mais por cima do playfield, saia do for loop
+            if (!checkIfOverlapping()) break
+        }
+
+        // verificar mais uma vez se a peça atual está por cima do playfield, se sim reiniciar para o estado anterior e não deixar rotacionar
+        if (checkIfOverlapping()) {
+            x = beforeX;
+            y = beforeY;
+            currentPiece = beforeRotatePiece;
+        }
+    }
+
     updateGhostPiece();
-    drawBoard(((_BLOCK_SIZE * 10) / 2) - 1, 0);
-
-    let isOverlapping = false;
-
-    currentPiece.forEach((row, row_index) => {
-        row.forEach((col, col_index) => {
-            if (col) if (playfield[row_index + y][col_index + x] !== 0) isOverlapping = true;
-        });
-    });
-
-    if (isOverlapping)
-        debugger
 }
 
 function placePiece(x, y) {
     currentPiece.forEach((row, row_index) => {
         row.forEach((col, col_index) => {
-            if (col) {
-                playfield[row_index + y][col_index + x] = col;
-            }
+            if (col) playfield[row_index + y][col_index + x] = col;
         });
     });
 }
@@ -179,9 +233,11 @@ function drawGhostPiece() {
     currentPiece.forEach(function (rows, row_index) {
         rows.forEach(function (column, column_index) {
             if (!column) return;
-            c.strokeStyle = Colors.getColor(column, false);
-            c.lineWidth = 2;
-            c.strokeRect((ghostX * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (ghostY * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+            //c.strokeStyle = Colors.getColor(column, false);
+            //c.lineWidth = 2;
+            //c.strokeRect((ghostX * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (ghostY * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+            c.fillStyle = Colors.getColor(column, true);
+            c.fillRect((ghostX * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (ghostY * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE)
         });
     });
 }
@@ -220,7 +276,7 @@ function resetCurrentPiece() {
     updateGhostPiece();
 }
 
-/*function _DEBUG_PRINT_PLAYFIELD_CONSOLE():void {
+/*function _DEBUG_PRINT_PLAYFIELD_CONSOLE() {
     console.clear();
     playfield.forEach(e => console.log( `║${e.map(x => x ? '█': ' ').join('')}║` ));
 }*/
@@ -338,25 +394,15 @@ function drawHold(x, y) {
     c.translate(x, y);
 
     c.strokeStyle = 'rgb(128,128,128)'
-    c.strokeRect(0, 0, (_BLOCK_SIZE * 4) + 10, (_BLOCK_SIZE * 4) + 10);
+    c.strokeRect(0, 0, (_BLOCK_SIZE * 5), (_BLOCK_SIZE * 5));
 
     c.translate(window.pieceX, window.pieceY);
-
-    //console.log(30 * Pieces.getPiece(window.piece).filter(row => !row.every(e => e === 0 )).length);
-
-    /*console.log(
-    Pieces.getPiece(window.piece).filter(row => !row.every(e => e === 0 )).map((row,i,arr) => {
-        if (!arr.every(x => x[i] === 0))
-            return row.slice(i, i+1);
-        return row;
-    })
-    )*/
 
     Pieces.getPiece(window.piece).forEach(function (rows, row_index) {
         rows.forEach(function (column, column_index) {
             if (!column) return;
             c.fillStyle = Colors.getColor(column, false);
-            c.fillRect((0 * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (0 * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+            c.fillRect((1 * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (1 * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
         });
     });
 
@@ -372,8 +418,8 @@ function drawBoard(x, y) {
     c.resetTransform();
 }
 
-window.drawHoldX = 10;
-window.drawHoldY = 10;
+window.drawHoldX = 0;
+window.drawHoldY = 0;
 
 window.pieceX = 0;
 window.pieceY = 0;
@@ -395,11 +441,6 @@ setInterval(() => {
     checkPreDropState();
     dropTime();
 
-    //drawHold(window.drawHoldX,window.drawHoldY);
+    drawHold(0, 0);
     drawBoard(((_BLOCK_SIZE * 10) / 2) - 1, 0);
-
-    /*c.fillStyle = 'rgb(255,0,0)';
-    c.font = "30px serif";
-    c.fillText('teste',0,30);*/
-
 }, 1000 / _FPS);
