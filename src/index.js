@@ -15,6 +15,7 @@ const _LEFT_WALL_LIMIT = 0;
 const left = new Key('ArrowLeft', () => move(Direction.Left));
 const right = new Key('ArrowRight', () => move(Direction.Right));
 const up = new Key('ArrowUp', () => rotate());
+const hold_once = new Key('c', () => hold());
 const down_once = new Key('ArrowDown', () => resetTimerOnce());
 const down_every_frame = new Key('ArrowDown', () => softDrop());
 const space = new Key(' ', () => hardDrop());
@@ -25,12 +26,13 @@ const preDropState = {
 }
 
 let currentPiece = Pieces.getPiece(2);
-let x = 2;
+let x = 4;
 let y = 0;
 let ghostX = 0;
 let ghostY = 0;
 let drop_timer = 0;
 let target_time = 45;
+let canHold = true;
 
 canvas.width = _BLOCK_SIZE * 20;
 canvas.height = _BLOCK_SIZE * 20;
@@ -267,13 +269,14 @@ function checkForLines() {
 }
 
 
-function resetCurrentPiece() {
+function placeCurrentPieceAndGenerateNew() {
     placePiece(x, y);
     currentPiece = Pieces.getPiece(Math.floor(Math.random() * (Pieces.getShapeListLength() + 1)));
     y = 0;
-    x = 5;
+    x = 4;
     checkForLines();
     updateGhostPiece();
+    canHold = true;
 }
 
 /*function _DEBUG_PRINT_PLAYFIELD_CONSOLE() {
@@ -290,7 +293,7 @@ function hitBottom(ignorePlacementTimer) {
         rows.forEach(function (column) {
             if (column && y + row_index === playfield.length - 1) {
                 hasHitBottom = true;
-                return !ignorePlacementTimer ? preDropState.isTouching = true : resetCurrentPiece();
+                return !ignorePlacementTimer ? preDropState.isTouching = true : placeCurrentPieceAndGenerateNew();
             }
         });
     });
@@ -308,7 +311,7 @@ function hitOtherBlock(ignorePlacementTimer) {
         rows.forEach(function (column, column_index) {
             if (column && playfield[y + row_index + 1][x + column_index]) {
                 hasHitOtherBlock = true;
-                return !ignorePlacementTimer ? preDropState.isTouching = true : resetCurrentPiece();
+                return !ignorePlacementTimer ? preDropState.isTouching = true : placeCurrentPieceAndGenerateNew();
             }
         });
     });
@@ -379,7 +382,7 @@ function checkPreDropState() {
         if (preDropState.time === 50) {
             preDropState.time = 0;
             preDropState.isTouching = false;
-            resetCurrentPiece();
+            placeCurrentPieceAndGenerateNew();
         } else {
             preDropState.time += 1;
         }
@@ -396,17 +399,35 @@ function drawHold(x, y) {
     c.strokeStyle = 'rgb(128,128,128)'
     c.strokeRect(0, 0, (_BLOCK_SIZE * 5), (_BLOCK_SIZE * 5));
 
-    c.translate(window.pieceX, window.pieceY);
+    c.translate(window.ghostPieceX, window.ghostPieceY);
 
-    Pieces.getPiece(window.piece).forEach(function (rows, row_index) {
-        rows.forEach(function (column, column_index) {
-            if (!column) return;
-            c.fillStyle = Colors.getColor(column, false);
-            c.fillRect((1 * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (1 * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+    if (window.ghostPiece)
+        window.ghostPiece.forEach(function (rows, row_index) {
+            rows.forEach(function (column, column_index) {
+                if (!column) return;
+                c.fillStyle = Colors.getColor(column, false);
+                c.fillRect((1 * _BLOCK_SIZE) + (column_index * _BLOCK_SIZE), (1 * _BLOCK_SIZE) + (row_index * _BLOCK_SIZE), _BLOCK_SIZE, _BLOCK_SIZE);
+            });
         });
-    });
 
     c.resetTransform();
+}
+
+window.hold = function () {
+    if (!canHold) return;
+
+    if (window.ghostPiece) {
+        const tempCurrPiece = currentPiece;
+        currentPiece = window.ghostPiece;
+        window.ghostPiece = tempCurrPiece;
+    } else {
+        window.ghostPiece = currentPiece;
+        currentPiece = Pieces.getPiece(Math.floor(Math.random() * (Pieces.getShapeListLength() + 1)));
+    }
+    y = 0;
+    x = 4;
+    updateGhostPiece();
+    canHold = false;
 }
 
 function drawBoard(x, y) {
@@ -421,9 +442,9 @@ function drawBoard(x, y) {
 window.drawHoldX = 0;
 window.drawHoldY = 0;
 
-window.pieceX = 0;
-window.pieceY = 0;
-window.piece = 0;
+window.ghostPieceX = 0;
+window.ghostPieceY = 0;
+window.ghostPiece = null;
 
 startGame();
 setInterval(() => {
@@ -437,6 +458,7 @@ setInterval(() => {
     right.doOnceRepeat();
     down_once.doOnce();
     down_every_frame.everyFrame();
+    hold_once.doOnce();
 
     checkPreDropState();
     dropTime();
